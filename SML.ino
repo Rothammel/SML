@@ -3,15 +3,17 @@
 #include <SPI.h>             //für w5100 im arduino "built in" enthalten
 #include <avr/wdt.h>         //Watchdog
 #include <TimeLib.h>         //Uhrzeit & Datum Library von Michael Margolis
+#include <FastCRC.h>         //CRC Library von Frank Boesing https://github.com/FrankBoesing/FastCRC
 
 
 // Globale Variablen & Konstanten
 byte inByte;
-byte smlMessage[453]; //minimum 453
+byte smlMessage[456]; //minimum 453 + 3 byte für CRC
 byte state = 0;
 int smlIndex;
 int startIndex;
 int stopIndex;
+byte crcCounter;
 char mqttBuffer[50];            //Buffer für Umwandlung von variablen in char
 char DatumZeit[30];
 byte Stunde=0, Minute=0, Sekunde=0, Tag=0, Monat=0;
@@ -31,6 +33,7 @@ const IPAddress server(192, 168, 0, 5);             // MQTT Server IP Adresse lo
 
 EthernetClient ethClient;
 PubSubClient client(ethClient);
+FastCRC16 CRC16;
 
 void setup()
 {
@@ -73,13 +76,17 @@ void loop()
       findStopSequence();
       break;
     case 2:
+      addCRC();
+      break;
+    case 3:
       publishMessage(); // do something with the result
       break;    
   }
   
 }
 
-void findStartSequence() {
+void findStartSequence()
+{
   while (Serial1.available())
   {
     inByte = Serial1.read(); //read serial buffer into array
@@ -104,34 +111,48 @@ void findStartSequence() {
 
 
 void findStopSequence()
-{
-//todo: timeout hinzufügen
-// überlauf verhindern
-while (Serial1.available())
-  {
-    inByte = Serial1.read();
-    smlMessage[smlIndex] = inByte;
-    smlIndex++;
-    if (smlIndex > 453)
+{  
+  while (Serial1.available())
     {
-      smlIndex = 0;
-      state = 0;
-    }
-
-    if (inByte == stopSequence[stopIndex])
-    {
-      stopIndex++;
-      if (stopIndex == sizeof(stopSequence))
+      inByte = Serial1.read();
+      smlMessage[smlIndex] = inByte;
+      smlIndex++;
+      if (smlIndex > 456)
       {
-        state = 2; // SML Sequenz komplett - senden
+        smlIndex = 0;
+        state = 0;
+      }
+  
+      if (inByte == stopSequence[stopIndex])
+      {
+        stopIndex++;
+        if (stopIndex == sizeof(stopSequence))
+        {
+          state = 2; // add CRC
+          stopIndex = 0;
+        }
+      }
+      else
+      {
         stopIndex = 0;
       }
     }
-    else
+}
+
+void addCRC()
+{
+  while (Serial1.available())
     {
-      stopIndex = 0;
+      inByte = Serial1.read();
+      smlMessage[smlIndex] = inByte;
+      smlIndex++;
+      crcCounter++;
+      if (crcCounter == 3)
+      {
+        state = 3; // send SML
+        crcCounter = 0;
+      }
     }
-  }
 }
 
 void publishMessage()
@@ -145,6 +166,11 @@ void publishMessage()
   }
   Serial.println();
 
+  //CRC check
+ 
+  if (CRC16.x25(smlMessage, sizeof(smlMessage) - 2) == (uint32_t)smlMessage[455] << 8 | (uint32_t)smlMessage[454])
+  {
+    Serial.println("CRC OK");
   //Positionen im SML Telegramm:
   //150 Gesamt Verbrauch
   //294 Gesamt Leistung
@@ -215,7 +241,7 @@ void publishMessage()
   Serial.print(L3Wirkleistung);
   Serial.println(" W");
   client.publish("/SmartMeter/L3", dtostrf(L3Wirkleistung, 1, 0, mqttBuffer), true);
-  
+  }
   // Neustart
   smlIndex = 0;
   state = 0;
