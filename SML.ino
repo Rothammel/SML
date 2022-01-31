@@ -7,7 +7,7 @@
 
 // Globale Variablen & Konstanten
 byte inByte;
-byte smlMessage[453];
+byte smlMessage[453]; //minimum 453
 byte state = 0;
 int smlIndex;
 int startIndex;
@@ -112,6 +112,11 @@ while (Serial1.available())
     inByte = Serial1.read();
     smlMessage[smlIndex] = inByte;
     smlIndex++;
+    if (smlIndex > 453)
+    {
+      smlIndex = 0;
+      state = 0;
+    }
 
     if (inByte == stopSequence[stopIndex])
     {
@@ -132,13 +137,13 @@ while (Serial1.available())
 void publishMessage()
 {
   //debug Ausgabe vom ganzen SML Telegram
-//  for (int i = 0; i < sizeof(smlMessage); i++)
-//  {
-//    if (smlMessage[i] < 0x10) Serial.print("0"); // print fehlende 0
-//    Serial.print(smlMessage[i], HEX);
-//    Serial.print(" ");
-//  }
-//  Serial.println();
+  for (int i = 0; i < sizeof(smlMessage); i++)
+  {
+    if (smlMessage[i] < 0x10) Serial.print("0"); // print fehlende 0
+    Serial.print(smlMessage[i], HEX);
+    Serial.print(" ");
+  }
+  Serial.println();
 
   //Positionen im SML Telegramm:
   //150 Gesamt Verbrauch
