@@ -165,82 +165,85 @@ void publishMessage()
     Serial.print(" ");
   }
   Serial.println();
-
+  Serial.print("CRC berechnet: ");
+  Serial.println(CRC16.x25(smlMessage, sizeof(smlMessage) - 2));
+  Serial.print("CRC aus Nachricht: ");
+  Serial.println((uint32_t)smlMessage[455] << 8 | (uint32_t)smlMessage[454]);
+  
   //CRC check
- 
-  if (CRC16.x25(smlMessage, sizeof(smlMessage) - 2) == (uint32_t)smlMessage[455] << 8 | (uint32_t)smlMessage[454])
+  if (CRC16.x25(smlMessage, sizeof(smlMessage) - 2) == ((uint32_t)smlMessage[455] << 8 | (uint32_t)smlMessage[454]))
   {
     Serial.println("CRC OK");
-  //Positionen im SML Telegramm:
-  //150 Gesamt Verbrauch
-  //294 Gesamt Leistung
-  //314 L1
-  //334 L2
-  //354 L3
+    //Positionen im SML Telegramm:
+    //150 Gesamt Verbrauch
+    //294 Gesamt Leistung
+    //314 L1
+    //334 L2
+    //354 L3
+    
+    // Gesamtverbrauch:
+    int start = 150;
+    unsigned long Gesamtverbrauch = (uint64_t)smlMessage[start] << 56;
+    Gesamtverbrauch |= (uint64_t)smlMessage[start + 1] << 48;
+    Gesamtverbrauch |= (uint64_t)smlMessage[start + 2] << 40;
+    Gesamtverbrauch |= (uint64_t)smlMessage[start + 3] << 32;
+    Gesamtverbrauch |= (uint64_t)smlMessage[start + 4] << 24;
+    Gesamtverbrauch |= (uint32_t)smlMessage[start + 5] << 16;
+    Gesamtverbrauch |= (uint32_t)smlMessage[start + 6] <<  8;
+    Gesamtverbrauch |=           smlMessage[start + 7];
+    
+    Serial.print("Gesamtverbrauch: ");
+    Serial.print(Gesamtverbrauch);
+    Serial.println(" Wh");
+    client.publish("/SmartMeter/Gesamtverbrauch", dtostrf(Gesamtverbrauch, 1, 0, mqttBuffer), true);
+    
+    start = 294;
+    
+    int GesamtWirkleistung = (uint64_t)smlMessage[start] << 24;
+    GesamtWirkleistung |= (uint32_t)smlMessage[start + 1] << 16;
+    GesamtWirkleistung |= smlMessage[start + 2] << 8;
+    GesamtWirkleistung |= smlMessage[start + 3];
   
-  // Gesamtverbrauch:
-  int start = 150;
-  unsigned long Gesamtverbrauch = (uint64_t)smlMessage[start] << 56;
-  Gesamtverbrauch |= (uint64_t)smlMessage[start + 1] << 48;
-  Gesamtverbrauch |= (uint64_t)smlMessage[start + 2] << 40;
-  Gesamtverbrauch |= (uint64_t)smlMessage[start + 3] << 32;
-  Gesamtverbrauch |= (uint64_t)smlMessage[start + 4] << 24;
-  Gesamtverbrauch |= (uint32_t)smlMessage[start + 5] << 16;
-  Gesamtverbrauch |= (uint32_t)smlMessage[start + 6] <<  8;
-  Gesamtverbrauch |=           smlMessage[start + 7];
+    Serial.print("Gesamt Wirkleistung: ");
+    Serial.print(GesamtWirkleistung);
+    Serial.println(" W");
+    client.publish("/SmartMeter/GesamtWirkleistung", dtostrf(GesamtWirkleistung, 1, 0, mqttBuffer), true);
   
-  Serial.print("Gesamtverbrauch: ");
-  Serial.print(Gesamtverbrauch);
-  Serial.println(" Wh");
-  client.publish("/SmartMeter/Gesamtverbrauch", dtostrf(Gesamtverbrauch, 1, 0, mqttBuffer), true);
+    start = 314;
+    
+    int L1Wirkleistung = (uint64_t)smlMessage[start] << 24;
+    L1Wirkleistung |= (uint32_t)smlMessage[start + 1] << 16;
+    L1Wirkleistung |= smlMessage[start + 2] << 8;
+    L1Wirkleistung |= smlMessage[start + 3];
   
-  start = 294;
+    Serial.print("L1 Wirkleistung: ");
+    Serial.print(L1Wirkleistung);
+    Serial.println(" W");
+    client.publish("/SmartMeter/L1", dtostrf(L1Wirkleistung, 1, 0, mqttBuffer), true);
   
-  int GesamtWirkleistung = (uint64_t)smlMessage[start] << 24;
-  GesamtWirkleistung |= (uint32_t)smlMessage[start + 1] << 16;
-  GesamtWirkleistung |= smlMessage[start + 2] << 8;
-  GesamtWirkleistung |= smlMessage[start + 3];
-
-  Serial.print("Gesamt Wirkleistung: ");
-  Serial.print(GesamtWirkleistung);
-  Serial.println(" W");
-  client.publish("/SmartMeter/GesamtWirkleistung", dtostrf(GesamtWirkleistung, 1, 0, mqttBuffer), true);
-
-  start = 314;
+    start = 334;
+    
+    int L2Wirkleistung = (uint64_t)smlMessage[start] << 24;
+    L2Wirkleistung |= (uint32_t)smlMessage[start + 1] << 16;
+    L2Wirkleistung |= smlMessage[start + 2] << 8;
+    L2Wirkleistung |= smlMessage[start + 3];
   
-  int L1Wirkleistung = (uint64_t)smlMessage[start] << 24;
-  L1Wirkleistung |= (uint32_t)smlMessage[start + 1] << 16;
-  L1Wirkleistung |= smlMessage[start + 2] << 8;
-  L1Wirkleistung |= smlMessage[start + 3];
-
-  Serial.print("L1 Wirkleistung: ");
-  Serial.print(L1Wirkleistung);
-  Serial.println(" W");
-  client.publish("/SmartMeter/L1", dtostrf(L1Wirkleistung, 1, 0, mqttBuffer), true);
-
-  start = 334;
+    Serial.print("L2 Wirkleistung: ");
+    Serial.print(L2Wirkleistung);
+    Serial.println(" W");
+    client.publish("/SmartMeter/L2", dtostrf(L2Wirkleistung, 1, 0, mqttBuffer), true);
   
-  int L2Wirkleistung = (uint64_t)smlMessage[start] << 24;
-  L2Wirkleistung |= (uint32_t)smlMessage[start + 1] << 16;
-  L2Wirkleistung |= smlMessage[start + 2] << 8;
-  L2Wirkleistung |= smlMessage[start + 3];
-
-  Serial.print("L2 Wirkleistung: ");
-  Serial.print(L2Wirkleistung);
-  Serial.println(" W");
-  client.publish("/SmartMeter/L2", dtostrf(L2Wirkleistung, 1, 0, mqttBuffer), true);
-
-  start = 354;
+    start = 354;
+    
+    int L3Wirkleistung = (uint64_t)smlMessage[start] << 24;
+    L3Wirkleistung |= (uint32_t)smlMessage[start + 1] << 16;
+    L3Wirkleistung |= smlMessage[start + 2] << 8;
+    L3Wirkleistung |= smlMessage[start + 3];
   
-  int L3Wirkleistung = (uint64_t)smlMessage[start] << 24;
-  L3Wirkleistung |= (uint32_t)smlMessage[start + 1] << 16;
-  L3Wirkleistung |= smlMessage[start + 2] << 8;
-  L3Wirkleistung |= smlMessage[start + 3];
-
-  Serial.print("L3 Wirkleistung: ");
-  Serial.print(L3Wirkleistung);
-  Serial.println(" W");
-  client.publish("/SmartMeter/L3", dtostrf(L3Wirkleistung, 1, 0, mqttBuffer), true);
+    Serial.print("L3 Wirkleistung: ");
+    Serial.print(L3Wirkleistung);
+    Serial.println(" W");
+    client.publish("/SmartMeter/L3", dtostrf(L3Wirkleistung, 1, 0, mqttBuffer), true);
   }
   // Neustart
   smlIndex = 0;
@@ -263,14 +266,14 @@ void callback(char* topic, byte* payload, unsigned int length)
  
 
   // wenn topic /System/Zeit empfangen dann String zerlegen und Variablen füllen 
-  if (String(topic)=="/System/Zeit"){
+  if (String(topic) == "/System/Zeit"){
     Stunde=String(message_buff).substring(0,2).toInt();
     Minute=String(message_buff).substring(2,4).toInt();
     Sekunde=String(message_buff).substring(4,6).toInt();
     setTime(Stunde, Minute, Sekunde, Tag, Monat, Jahr);
   }
   // wenn topic /System/Datum empfangen dann String zerlegen und Variablen füllen 
-  if (String(topic)=="/System/Datum")
+  if (String(topic) == "/System/Datum")
   {
     Tag=String(message_buff).substring(0,2).toInt();
     Monat=String(message_buff).substring(2,4).toInt();
