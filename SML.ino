@@ -191,11 +191,12 @@ void publishMessage()
     Gesamtverbrauch |= (uint32_t)smlMessage[start + 5] << 16;
     Gesamtverbrauch |= (uint32_t)smlMessage[start + 6] <<  8;
     Gesamtverbrauch |=           smlMessage[start + 7];
-    
+
+    float fGesamtverbrauch = Gesamtverbrauch / 10000
     Serial.print("Gesamtverbrauch: ");
-    Serial.print(Gesamtverbrauch);
-    Serial.println(" Wh");
-    client.publish("/SmartMeter/Gesamtverbrauch", dtostrf(Gesamtverbrauch, 1, 0, mqttBuffer), true);
+    Serial.print(fGesamtverbrauch);
+    Serial.println(" kWh");
+    client.publish("/SmartMeter/Gesamtverbrauch", dtostrf(fGesamtverbrauch, 1, 3, mqttBuffer), true);
     
     start = 294;
     
@@ -293,6 +294,12 @@ void reconnect()
       // Abonierte Topics:
       client.subscribe("/System/Zeit");
       client.subscribe("/System/Datum");
+      //HomeAssistant autodiscover configs
+      client.publish(P("homeassistant/sensor/SmartMeter/Gesamtverbrauch/config"), P("{\"name\":\"Gesamtverbrauch\",\"obj_idd\":\"Gesamtverbrauch\",\"uniq_id\":\"Gesamtverbrauch\",\"unit_of_meas\":\"kWh\",\"stat_t\":\"/SmartMeter/Gesamtverbrauch"}"), true);
+      client.publish(P("homeassistant/sensor/SmartMeter/GesamtWirkleistung/config"), P("{\"name\":\"Gesamt Wirkleistung\",\"obj_idd\":\"GesamtWirkleistung\",\"uniq_id\":\"gesamtwirkleistung\",\"unit_of_meas\":\"W\",\"stat_t\":\"/SmartMeter/GesamtWirkleistung"}"), true);
+      client.publish(P("homeassistant/sensor/SmartMeter/L1/config"), P("{\"name\":\"Wirkleistung L1\",\"obj_idd\":\"WirkleistungL1\",\"uniq_id\":\"wirkleistung_l1\",\"unit_of_meas\":\"W\",\"stat_t\":\"/SmartMeter/L1"}"), true);
+      client.publish(P("homeassistant/sensor/SmartMeter/L2/config"), P("{\"name\":\"Wirkleistung L2\",\"obj_idd\":\"WirkleistungL2\",\"uniq_id\":\"wirkleistung_l2\",\"unit_of_meas\":\"W\",\"stat_t\":\"/SmartMeter/L2"}"), true);
+      client.publish(P("homeassistant/sensor/SmartMeter/L3/config"), P("{\"name\":\"Wirkleistung L3\",\"obj_idd\":\"WirkleistungL3\",\"uniq_id\":\"wirkleistung_l3\",\"unit_of_meas\":\"W\",\"stat_t\":\"/SmartMeter/L3"}"), true);
     }
   }
 }
