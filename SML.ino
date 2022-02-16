@@ -1,5 +1,5 @@
 //spart RAM ein
-char StringBuffer[80];
+char StringBuffer[250];
 #define P(str) strncpy_P(StringBuffer, PSTR(str), sizeof(StringBuffer))
 
 #include <Ethernet.h>        //für w5100 im arduino "built in" enthalten
@@ -197,7 +197,7 @@ void publishMessage()
     Gesamtverbrauch |= (uint32_t)smlMessage[start + 6] <<  8;
     Gesamtverbrauch |=           smlMessage[start + 7];
 
-    float fGesamtverbrauch = Gesamtverbrauch / 10000;
+    float fGesamtverbrauch = (float)Gesamtverbrauch / 10000;
     Serial.print("Gesamtverbrauch: ");
     Serial.print(fGesamtverbrauch);
     Serial.println(" kWh");
@@ -300,11 +300,11 @@ void reconnect()
       client.subscribe("/System/Zeit");
       client.subscribe("/System/Datum");
       //HomeAssistant autodiscover configs
-      client.publish(P("homeassistant/sensor/SmartMeter/Gesamtverbrauch/config"), P("{\"name\":\"Gesamtverbrauch\",\"obj_idd\":\"Gesamtverbrauch\",\"uniq_id\":\"Gesamtverbrauch\",\"unit_of_meas\":\"kWh\",\"stat_t\":\"/SmartMeter/Gesamtverbrauch\",\"stat_cla\":\"measurement\",\"dev_cla\":\"energy\"}"), true);
-      client.publish(P("homeassistant/sensor/SmartMeter/GesamtWirkleistung/config"), P("{\"name\":\"Gesamt Wirkleistung\",\"obj_idd\":\"GesamtWirkleistung\",\"uniq_id\":\"gesamtwirkleistung\",\"unit_of_meas\":\"W\",\"stat_t\":\"/SmartMeter/GesamtWirkleistung\"}"), true);
-      client.publish(P("homeassistant/sensor/SmartMeter/L1/config"), P("{\"name\":\"Wirkleistung L1\",\"obj_idd\":\"WirkleistungL1\",\"uniq_id\":\"wirkleistung_l1\",\"unit_of_meas\":\"W\",\"stat_t\":\"/SmartMeter/L1\"}"), true);
-      client.publish(P("homeassistant/sensor/SmartMeter/L2/config"), P("{\"name\":\"Wirkleistung L2\",\"obj_idd\":\"WirkleistungL2\",\"uniq_id\":\"wirkleistung_l2\",\"unit_of_meas\":\"W\",\"stat_t\":\"/SmartMeter/L2\"}"), true);
-      client.publish(P("homeassistant/sensor/SmartMeter/L3/config"), P("{\"name\":\"Wirkleistung L3\",\"obj_idd\":\"WirkleistungL3\",\"uniq_id\":\"wirkleistung_l3\",\"unit_of_meas\":\"W\",\"stat_t\":\"/SmartMeter/L3\"}"), true);
+      client.publish("homeassistant/sensor/SmartMeter/Gesamtverbrauch/config", P("{\"name\":\"Gesamtverbrauch\",\"obj_idd\":\"Gesamtverbrauch\",\"uniq_id\":\"Gesamtverbrauch\",\"unit_of_meas\":\"kWh\",\"stat_t\":\"/SmartMeter/Gesamtverbrauch\",\"stat_cla\":\"measurement\",\"dev_cla\":\"energy\"}"), true);
+      client.publish("homeassistant/sensor/SmartMeter/GesamtWirkleistung/config", P("{\"name\":\"Gesamt Wirkleistung\",\"obj_idd\":\"GesamtWirkleistung\",\"uniq_id\":\"gesamtwirkleistung\",\"unit_of_meas\":\"W\",\"stat_t\":\"/SmartMeter/GesamtWirkleistung\"}"), true);
+      client.publish("homeassistant/sensor/SmartMeter/L1/config", P("{\"name\":\"Wirkleistung L1\",\"obj_idd\":\"WirkleistungL1\",\"uniq_id\":\"wirkleistung_l1\",\"unit_of_meas\":\"W\",\"stat_t\":\"/SmartMeter/L1\"}"), true);
+      client.publish("homeassistant/sensor/SmartMeter/L2/config", P("{\"name\":\"Wirkleistung L2\",\"obj_idd\":\"WirkleistungL2\",\"uniq_id\":\"wirkleistung_l2\",\"unit_of_meas\":\"W\",\"stat_t\":\"/SmartMeter/L2\"}"), true);
+      client.publish("homeassistant/sensor/SmartMeter/L3/config", P("{\"name\":\"Wirkleistung L3\",\"obj_idd\":\"WirkleistungL3\",\"uniq_id\":\"wirkleistung_l3\",\"unit_of_meas\":\"W\",\"stat_t\":\"/SmartMeter/L3\"}"), true);
     }
   }
 }
