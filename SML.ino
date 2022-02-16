@@ -49,6 +49,7 @@ void setup()
 
   client.setServer(server, 1883); // Adresse des MQTT-Brokers
   client.setCallback(callback);   // Handler für eingehende Nachrichten
+  client.setBufferSize(512);      // increase MQTT buffer for Home Asssistant autodiscover
   
   // Ethernet-Verbindung aufbauen
   Ethernet.begin(mac, ip);
