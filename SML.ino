@@ -163,17 +163,17 @@ void addCRC()
 void publishMessage()
 {
   //debug Ausgabe vom ganzen SML Telegram
-  for (int i = 0; i < sizeof(smlMessage); i++)
-  {
-    if (smlMessage[i] < 0x10) Serial.print("0"); // print fehlende 0
-    Serial.print(smlMessage[i], HEX);
-    Serial.print(" ");
-  }
-  Serial.println();
-  Serial.print("CRC berechnet: ");
-  Serial.println(CRC16.x25(smlMessage, sizeof(smlMessage) - 2));
-  Serial.print("CRC aus Nachricht: ");
-  Serial.println((uint32_t)smlMessage[455] << 8 | (uint32_t)smlMessage[454]);
+//  for (int i = 0; i < sizeof(smlMessage); i++)
+//  {
+//    if (smlMessage[i] < 0x10) Serial.print("0"); // print fehlende 0
+//    Serial.print(smlMessage[i], HEX);
+//    Serial.print(" ");
+//  }
+//  Serial.println();
+//  Serial.print("CRC berechnet: ");
+//  Serial.println(CRC16.x25(smlMessage, sizeof(smlMessage) - 2));
+//  Serial.print("CRC aus Nachricht: ");
+//  Serial.println((uint32_t)smlMessage[455] << 8 | (uint32_t)smlMessage[454]);
   
   //CRC check
   if (CRC16.x25(smlMessage, sizeof(smlMessage) - 2) == ((uint32_t)smlMessage[455] << 8 | (uint32_t)smlMessage[454]))
@@ -198,9 +198,9 @@ void publishMessage()
     Gesamtverbrauch |=           smlMessage[start + 7];
 
     float fGesamtverbrauch = (float)Gesamtverbrauch / 10000;
-    Serial.print("Gesamtverbrauch: ");
-    Serial.print(fGesamtverbrauch);
-    Serial.println(" kWh");
+//    Serial.print("Gesamtverbrauch: ");
+//    Serial.print(fGesamtverbrauch);
+//    Serial.println(" kWh");
     client.publish("/SmartMeter/Gesamtverbrauch", dtostrf(fGesamtverbrauch, 1, 3, mqttBuffer), true);
     
     start = 294;
@@ -210,9 +210,9 @@ void publishMessage()
     GesamtWirkleistung |= smlMessage[start + 2] << 8;
     GesamtWirkleistung |= smlMessage[start + 3];
   
-    Serial.print("Gesamt Wirkleistung: ");
-    Serial.print(GesamtWirkleistung);
-    Serial.println(" W");
+//    Serial.print("Gesamt Wirkleistung: ");
+//    Serial.print(GesamtWirkleistung);
+//    Serial.println(" W");
     client.publish("/SmartMeter/GesamtWirkleistung", dtostrf(GesamtWirkleistung, 1, 0, mqttBuffer), true);
   
     start = 314;
@@ -222,9 +222,9 @@ void publishMessage()
     L1Wirkleistung |= smlMessage[start + 2] << 8;
     L1Wirkleistung |= smlMessage[start + 3];
   
-    Serial.print("L1 Wirkleistung: ");
-    Serial.print(L1Wirkleistung);
-    Serial.println(" W");
+//    Serial.print("L1 Wirkleistung: ");
+//    Serial.print(L1Wirkleistung);
+//    Serial.println(" W");
     client.publish("/SmartMeter/L1", dtostrf(L1Wirkleistung, 1, 0, mqttBuffer), true);
   
     start = 334;
@@ -234,9 +234,9 @@ void publishMessage()
     L2Wirkleistung |= smlMessage[start + 2] << 8;
     L2Wirkleistung |= smlMessage[start + 3];
   
-    Serial.print("L2 Wirkleistung: ");
-    Serial.print(L2Wirkleistung);
-    Serial.println(" W");
+//    Serial.print("L2 Wirkleistung: ");
+//    Serial.print(L2Wirkleistung);
+//    Serial.println(" W");
     client.publish("/SmartMeter/L2", dtostrf(L2Wirkleistung, 1, 0, mqttBuffer), true);
   
     start = 354;
@@ -246,9 +246,9 @@ void publishMessage()
     L3Wirkleistung |= smlMessage[start + 2] << 8;
     L3Wirkleistung |= smlMessage[start + 3];
   
-    Serial.print("L3 Wirkleistung: ");
-    Serial.print(L3Wirkleistung);
-    Serial.println(" W");
+//    Serial.print("L3 Wirkleistung: ");
+//    Serial.print(L3Wirkleistung);
+//    Serial.println(" W");
     client.publish("/SmartMeter/L3", dtostrf(L3Wirkleistung, 1, 0, mqttBuffer), true);
   }
   // Neustart
