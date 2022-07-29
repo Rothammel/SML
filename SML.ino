@@ -24,8 +24,8 @@ byte Stunde=0, Minute=0, Sekunde=0, Tag=0, Monat=0;
 int  Jahr=0;
 
 // ---- Timer ----
-unsigned long         vorMillisReconnect = 100000; // nur alle 100s einen reconnect versuchen
-const long            intervalReconnect  = 100000;
+unsigned long         vorMillisReconnect = 100 * 1000L; // nur alle 100s einen reconnect versuchen
+const long            intervalReconnect  = 100 * 1000L;
 
 
 const byte startSequence[] = { 0x1B, 0x1B, 0x1B, 0x1B, 0x01, 0x01, 0x01, 0x01 }; //Start Sequenz SML Telegram
@@ -213,7 +213,7 @@ void publishMessage()
 //    Serial.print("Gesamt Wirkleistung: ");
 //    Serial.print(GesamtWirkleistung);
 //    Serial.println(" W");
-    client.publish("/SmartMeter/GesamtWirkleistung", dtostrf(GesamtWirkleistung, 1, 0, mqttBuffer), true);
+    client.publish("/SmartMeter/GesamtWirkleistung", dtostrf(GesamtWirkleistung, 1, 0, mqttBuffer), false);
   
     start = 314;
     
@@ -225,7 +225,7 @@ void publishMessage()
 //    Serial.print("L1 Wirkleistung: ");
 //    Serial.print(L1Wirkleistung);
 //    Serial.println(" W");
-    client.publish("/SmartMeter/L1", dtostrf(L1Wirkleistung, 1, 0, mqttBuffer), true);
+    client.publish("/SmartMeter/L1", dtostrf(L1Wirkleistung, 1, 0, mqttBuffer), false);
   
     start = 334;
     
@@ -237,7 +237,7 @@ void publishMessage()
 //    Serial.print("L2 Wirkleistung: ");
 //    Serial.print(L2Wirkleistung);
 //    Serial.println(" W");
-    client.publish("/SmartMeter/L2", dtostrf(L2Wirkleistung, 1, 0, mqttBuffer), true);
+    client.publish("/SmartMeter/L2", dtostrf(L2Wirkleistung, 1, 0, mqttBuffer), false);
   
     start = 354;
     
@@ -249,7 +249,7 @@ void publishMessage()
 //    Serial.print("L3 Wirkleistung: ");
 //    Serial.print(L3Wirkleistung);
 //    Serial.println(" W");
-    client.publish("/SmartMeter/L3", dtostrf(L3Wirkleistung, 1, 0, mqttBuffer), true);
+    client.publish("/SmartMeter/L3", dtostrf(L3Wirkleistung, 1, 0, mqttBuffer), false);
   }
   // Neustart
   smlIndex = 0;
