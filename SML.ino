@@ -45,7 +45,7 @@ void setup()
   Serial.begin(115200);
   // Tastkopf Stromzähler
   Serial1.begin(9600);
-  Serial.println("SML Tester");
+  Serial.println("SML auslesen");
 
   client.setServer(server, 1883); // Adresse des MQTT-Brokers
   client.setCallback(callback);   // Handler für eingehende Nachrichten
@@ -181,6 +181,7 @@ void publishMessage()
     Serial.println("CRC OK");
     //Positionen im SML Telegramm:
     //150 Gesamt Verbrauch
+    //222 gesamt Lieferung
     //294 Gesamt Leistung
     //314 L1
     //334 L2
@@ -202,6 +203,24 @@ void publishMessage()
 //    Serial.print(fGesamtverbrauch);
 //    Serial.println(" kWh");
     client.publish("/SmartMeter/Gesamtverbrauch", dtostrf(fGesamtverbrauch, 1, 3, mqttBuffer), true);
+
+    // Gesamtlieferung:
+    // Gesamtverbrauch:
+    start = 222;
+    unsigned long Gesamtlieferung = (uint64_t)smlMessage[start] << 56;
+    Gesamtlieferung |= (uint64_t)smlMessage[start + 1] << 48;
+    Gesamtlieferung |= (uint64_t)smlMessage[start + 2] << 40;
+    Gesamtlieferung |= (uint64_t)smlMessage[start + 3] << 32;
+    Gesamtlieferung |= (uint64_t)smlMessage[start + 4] << 24;
+    Gesamtlieferung |= (uint32_t)smlMessage[start + 5] << 16;
+    Gesamtlieferung |= (uint32_t)smlMessage[start + 6] <<  8;
+    Gesamtlieferung |=           smlMessage[start + 7];
+
+    float fGesamtlieferung = (float)Gesamtlieferung / 10000;
+//    Serial.print("Gesamtlieferung: ");
+//    Serial.print(fGesamtlieferung);
+//    Serial.println(" kWh");
+    client.publish("/SmartMeter/Gesamtlieferung", dtostrf(fGesamtlieferung, 1, 3, mqttBuffer), true);
     
     start = 294;
     
@@ -301,6 +320,7 @@ void reconnect()
       client.subscribe("/System/Datum");
       //HomeAssistant autodiscover configs
       client.publish("homeassistant/sensor/SmartMeter/Gesamtverbrauch/config", P("{\"name\":\"Gesamtverbrauch\",\"obj_idd\":\"Gesamtverbrauch\",\"uniq_id\":\"Gesamtverbrauch\",\"unit_of_meas\":\"kWh\",\"stat_t\":\"/SmartMeter/Gesamtverbrauch\",\"stat_cla\":\"total\",\"dev_cla\":\"energy\"}"), true);
+      client.publish("homeassistant/sensor/SmartMeter/Gesamtlieferung/config", P("{\"name\":\"Gesamtlieferung\",\"obj_idd\":\"Gesamtlieferung\",\"uniq_id\":\"Gesamtlieferung\",\"unit_of_meas\":\"kWh\",\"stat_t\":\"/SmartMeter/Gesamtlieferung\",\"stat_cla\":\"total\",\"dev_cla\":\"energy\"}"), true);
       client.publish("homeassistant/sensor/SmartMeter/GesamtWirkleistung/config", P("{\"name\":\"Gesamt Wirkleistung\",\"obj_idd\":\"GesamtWirkleistung\",\"uniq_id\":\"gesamtwirkleistung\",\"unit_of_meas\":\"W\",\"stat_t\":\"/SmartMeter/GesamtWirkleistung\",\"dev_cla\":\"power\"}"), true);
       client.publish("homeassistant/sensor/SmartMeter/L1/config", P("{\"name\":\"Wirkleistung L1\",\"obj_idd\":\"WirkleistungL1\",\"uniq_id\":\"wirkleistung_l1\",\"unit_of_meas\":\"W\",\"stat_t\":\"/SmartMeter/L1\",\"dev_cla\":\"power\"}"), true);
       client.publish("homeassistant/sensor/SmartMeter/L2/config", P("{\"name\":\"Wirkleistung L2\",\"obj_idd\":\"WirkleistungL2\",\"uniq_id\":\"wirkleistung_l2\",\"unit_of_meas\":\"W\",\"stat_t\":\"/SmartMeter/L2\",\"dev_cla\":\"power\"}"), true);
