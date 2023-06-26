@@ -46,6 +46,7 @@ void setup()
   // Tastkopf Stromzähler
   Serial1.begin(9600);
   Serial.println("SML auslesen");
+  Serial2.begin(9600);
 
   client.setServer(server, 1883); // Adresse des MQTT-Brokers
   client.setCallback(callback);   // Handler für eingehende Nachrichten
@@ -95,6 +96,7 @@ void findStartSequence()
   while (Serial1.available())
   {
     inByte = Serial1.read(); //read serial buffer into array
+    Serial2.write(inByte);   // send SML data to IR diode
     if (inByte == startSequence[startIndex]) //in case byte in array matches the start sequence at position 0,1,2...
     {
       smlMessage[startIndex] = inByte; //set smlMessage element at position 0,1,2 to inByte value
@@ -120,6 +122,7 @@ void findStopSequence()
   while (Serial1.available())
     {
       inByte = Serial1.read();
+      Serial2.write(inByte);   // send SML data to IR diode
       smlMessage[smlIndex] = inByte;
       smlIndex++;
       if (smlIndex > 456)
@@ -149,6 +152,7 @@ void addCRC()
   while (Serial1.available())
     {
       inByte = Serial1.read();
+      Serial2.write(inByte);   // send SML data to IR diode
       smlMessage[smlIndex] = inByte;
       smlIndex++;
       crcCounter++;
